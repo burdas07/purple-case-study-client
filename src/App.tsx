@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useEffect, useState } from "react";
 import "./App.css";
 import Counter from "./components/Counter";
@@ -51,30 +52,69 @@ function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // return (
+  //   <div classNameName="App">
+
+  //     <p>{(rates !== null) ? "Rates have been loaded" : "Rates are missing, we are fucked"}</p>
+
+  //     <button onClick={() => setShowCounter(!showCounter)}>
+  //       {showCounter ? "Hide Counter" : "Show Counter"}
+  //     </button>
+  //     {showCounter && <Counter />}
+
+  //     <p></p>
+
+  //     <button onClick={() => setShowFixer(!showFixer)}>
+  //       {showFixer ? "Hide Fixer" : "Show Fixer"}
+  //     </button>
+  //     {showFixer && <ApiFixer />}
+
+  //     <button onClick={() => setShowOER(!showOER)}>
+  //       {showOER ? "Hide OER" : "Show OER"}
+  //     </button>
+  //     {showOER && <ApiOER />}
+  //   </div>
+  // );
+
   return (
-    <div className="App">
+    <div>
+        <div className="pure-g">
+            {/* <!-- from currency --> */}
+            <div className="pure-u-1-5">
+                <p>From<br/>
+                <select name="currency" id="currencyFrom">
+                    <option value="EUR">EUR</option>
+                    <option value="USD">USD</option>
+                    <option value="CZK">CZK</option>                   
+                </select></p>
+            </div>
+            {/* <!-- from amount --> */}
+            <div className="pure-u-1-5">
+                <p>Amount<br/><input type="text" id="amountFrom" name="amountFrom"/></p>
+            </div>
+            {/* <!-- to currency --> */}
+            <div className="pure-u-1-5">
+                <p>To<br/>
+                <select name="currency" id="currencyTo">
+                    <option value="EUR">EUR</option>
+                    <option value="USD">USD</option>
+                    <option value="CZK">CZK</option>                   
+                </select></p>
+            </div>
+            {/* <!-- to amount --> */}
+            <div className="pure-u-1-5">
+                <p>Result<br/><input type="text" id="amountTo" name="amountTo"/></p>
+            </div>
+            {/* <!-- exchange rate --> */}
+            <div className="pure-u-1-5">
+                <p>Exchange Rate<br/><input type="text" id="exchangeRate" name="exchangeRate"/></p>
+            </div>
+            {/* <!-- convert button --> */}
+        </div>
+          <p><div className="pure-button pure-button-primary">Convert</div></p>
+      </div>
 
-      <p>{(rates !== null) ? "Rates have been loaded" : "Rates are missing, we are fucked"}</p>
 
-      <button onClick={() => setShowCounter(!showCounter)}>
-        {showCounter ? "Hide Counter" : "Show Counter"}
-      </button>
-      {showCounter && <Counter />}
-
-      <p></p>
-
-      <button onClick={() => setShowFixer(!showFixer)}>
-        {showFixer ? "Hide Fixer" : "Show Fixer"}
-      </button>
-      {showFixer && <ApiFixer />}
-
-      <button onClick={() => setShowOER(!showOER)}>
-        {showOER ? "Hide OER" : "Show OER"}
-      </button>
-      {showOER && <ApiOER />}
-
-      {/* <TodoList /> */}
-    </div>
   );
 }
 
