@@ -1,23 +1,38 @@
-const quickStats = () => {
+import React from 'react';
+
+interface IQuickStats {
+    currBought: string,
+    currBoughtAmount: number,
+    currSold: string,
+    currSoldAmount: number
+}
+
+
+//const quickStats = ({ currBought, currBoughtAmount, currSold, currSoldAmount} : IQuickStats) => {
+const quickStats: React.FC<IQuickStats> = ({ currBought, currBoughtAmount, currSold, currSoldAmount}) => {
 
     return (
+
+
         <table className="pure-table pure-table-horizontal center">
+        <tbody>
         <tr>
             <th>Most Bought Currency</th>
-            <td>EUR</td>
+            <td>{currBought}</td>
         </tr>
         <tr>
             <th>Total EUR Bought</th>
-            <td>2009</td>
+            <td>{currBoughtAmount}</td>
         </tr>
         <tr>
             <th>Most Sold Currency</th>
-            <td>USD</td>
+            <td>{currSold}</td>
         </tr>
         <tr>
             <th>Total Sold  </th>
-            <td>2009</td>
+            <td>{currSoldAmount}</td>
         </tr>
+        </tbody>
     </table>
 
     );
