@@ -8,7 +8,7 @@ import './styles/style.css';
 //import './index.css';
 import App from './App';
 import QuickStats from './components/QuickStats';
-import History from './components/History'
+import History from './components/History';
 import reportWebVitals from './reportWebVitals';
 
 ReactDOM.render(
@@ -27,18 +27,10 @@ ReactDOM.render(
     <QuickStats />
 
     <h3 className="content-subhead is-center">Transaction History</h3>
-
-
+    <History />
 
     </div>
-    </div>
-
-    
-
-
-
-
-      
+    </div>    
 
   </React.StrictMode>,
   document.getElementById('root')
