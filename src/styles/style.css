@@ -104,14 +104,16 @@ label {
     background: var(--clr-Lint2);
     color: var(--clr-ForestGreen);
     padding: 0.5em 2em;
-    border-radius: 5px;
+    border-radius: 10px;
+    font-size: 16px;
 }
 
 a.pure-button-primary {
     background: var(--clr-Lint2);
     color: var(--clr-ForestGreen);
-    border-radius: 5px;
+    border-radius: 10px;
     font-size: 120%;
+    font-size: 16px;
 }
 
 
@@ -169,7 +171,7 @@ a.pure-button-primary {
 .content-wrapper {
     /* These styles are required for the "scroll-over" effect */
     position: absolute;
-    top: 60%;
+    top: 50%;
     width: 100%;
     min-height: 12%;
     z-index: 2;

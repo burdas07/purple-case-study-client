@@ -24,6 +24,7 @@ ReactDOM.render(
     <div className="content center" style={{width: '85%', margin: 'auto'}}>
 
     <h3 className="content-subhead is-center">Quick Stats</h3>
+    <p className="is-center">Receiving all the transactions and making easy calculations on client side. Scroll down to browse transaction history.</p> 
     <QuickStats />
 
     <h3 className="content-subhead is-center">Transaction History</h3>
