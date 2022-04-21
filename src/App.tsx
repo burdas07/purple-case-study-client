@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useEffect, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import "./App.css";
 //import TodoList from "./components/TodoList";
 import axios from "axios";
@@ -21,14 +21,31 @@ const ratesAPI = "http://localhost:1337/api/convert/getrates";
 const getRatesTest = "http://localhost:1337/api/convert/money?from=CZK&to=EUR&amount=5378";
 
 
-
 function App() {
   // let's use boolean to decide wherther we want to show component
   const [showCounter, setShowCounter] = useState(false);
   const [showFixer, setShowFixer] = useState(false);
   const [showOER, setShowOER] = useState(false);
 
+
+
+
+  // Hooks for handling input
+  const [currencyFrom, setCurrencyFrom] = useState("EUR"); // currency from
+  const [currencyFromAmount, setCurrencyFromAmount] = useState(1); // currency from amount
+  const [currencyTo, setCurrencyTo] = useState("EUR"); // currency To
+  
+
+  // Hooks for handling results
+  const [currencyToAmount, setCurrencyToAmount] = useState(1);
+  const [exchangeRate, setExchangeRate] = useState(1);
+  const [history, setHistory] = useState({});
+
+
+
+
   const [rates, setRates] = useState(ratesBackup);
+
   // useEffect(() => {
 
   //   // Different APIs (EUR and USD base)
@@ -78,6 +95,49 @@ function App() {
 
 }
 
+// event: ChangeEvent<{ value: string }>) => {
+//   setState({ value: event?.currentTarget?.value });
+
+const handleInputCurrFromChanged = (event: ChangeEvent<{ value: string }>) => {
+  setCurrencyFrom(event?.currentTarget?.value);
+  console.log("currency from changed to: " + currencyFrom);
+}
+
+const handleInputCurrFromAmountChanged = (event: ChangeEvent<{ value: string }>) => {
+
+  var value = event?.currentTarget?.value;
+  if (value === "") {
+    setCurrencyFromAmount(0);    
+    return;
+  }
+
+  var number = parseFloat(value);
+  setCurrencyFromAmount(number);
+  console.log("currency from amount changed to: " + currencyFromAmount);
+}
+
+
+const handleInputCurrToChanged = (event: ChangeEvent<{ value: string }>) => {
+  setCurrencyTo(event?.currentTarget?.value);
+  console.log("currency to changed to: " + currencyTo);
+}
+
+
+
+
+const computeTransferRate = (par1:number, par2:number) => {
+
+  // check for null div
+  if(par1 === 0) {
+    return 1;}
+
+  if(par2 === 0) {
+    return 0;}
+
+  setExchangeRate(par1/par2);
+
+//  return par1/par2;
+}
 
   // return (
   //   <div classNameName="App">
@@ -113,7 +173,7 @@ function App() {
               {/* <!-- from currency --> */}
               <div className="pure-u-1-5">
                   <p>From<br/>
-                  <select name="currency" id="currencyFrom">
+                  <select name="currency" id="currencyFrom" value={currencyFrom} onChange={handleInputCurrFromChanged}>
                       <option value="EUR">EUR</option>
                       <option value="USD">USD</option>
                       <option value="CZK">CZK</option>                   
@@ -121,12 +181,12 @@ function App() {
               </div>
               {/* <!-- from amount --> */}
               <div className="pure-u-1-5">
-                  <p>Amount<br/><input type="text" id="amountFrom" name="amountFrom"/></p>
+                  <p>Amount<br/><input type="string" id="amountFrom" name="amountFrom" value={currencyFromAmount} onChange={handleInputCurrFromAmountChanged}/></p>
               </div>
               {/* <!-- to currency --> */}
               <div className="pure-u-1-5">
                   <p>To<br/>
-                  <select name="currency" id="currencyTo">
+                  <select name="currency" id="currencyTo" value={currencyTo} onChange={handleInputCurrToChanged}>
                       <option value="EUR">EUR</option>
                       <option value="USD">USD</option>
                       <option value="CZK">CZK</option>                   
