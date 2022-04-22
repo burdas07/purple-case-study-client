@@ -59,6 +59,17 @@ label {
     color: var(--clr-Lint1);
 }
 
+.input-number {
+    background-color: var(--clr-Lint2);
+}
+
+.input-result {
+    background-color: var(--clr-Lint1);
+}
+
+.input-money-select {
+    background-color: var(--clr-Lint2);
+}
 /*
  * -- LAYOUT STYLES --
  * These are some useful classes which I will need
