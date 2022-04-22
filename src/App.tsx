@@ -1,10 +1,10 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { ChangeEvent, useEffect, useState } from "react";
-import "./App.css";
 //import TodoList from "./components/TodoList";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import QuickStats from "./components/QuickStats";
 import History from "./components/History";
+import { getTransactions } from "./API";
 
 // chtel jsem to inicializovat ze serveru pres api, ale whatever..
 const currencyList = ["AED","AFN","ALL","AMD","ANG","AOA","ARS","AUD","AWG","AZN","BAM","BBD","BDT","BGN","BHD","BIF","BMD","BND","BOB","BRL","BSD","BTC","BTN","BWP","BYN","BYR","BZD","CAD","CDF","CHF","CLF","CLP","CNY","COP","CRC","CUC","CUP","CVE","CZK","DJF","DKK","DOP","DZD","EGP","ERN","ETB","EUR","FJD","FKP","GBP","GEL","GGP","GHS","GIP","GMD","GNF","GTQ","GYD","HKD","HNL","HRK","HTG","HUF","IDR","ILS","IMP","INR","IQD","IRR","ISK","JEP","JMD","JOD","JPY","KES","KGS","KHR","KMF","KPW","KRW","KWD","KYD","KZT","LAK","LBP","LKR","LRD","LSL","LTL","LVL","LYD","MAD","MDL","MGA","MKD","MMK","MNT","MOP","MRO","MUR","MVR","MWK","MXN","MYR","MZN","NAD","NGN","NIO","NOK","NPR","NZD","OMR","PAB","PEN","PGK","PHP","PKR","PLN","PYG","QAR","RON","RSD","RUB","RWF","SAR","SBD","SCR","SDG","SEK","SGD","SHP","SLL","SOS","SRD","STD","SVC","SYP","SZL","THB","TJS","TMT","TND","TOP","TRY","TTD","TWD","TZS","UAH","UGX","USD","UYU","UZS","VEF","VND","VUV","WST","XAF","XAG","XAU","XCD","XDR","XOF","XPF","YER","ZAR","ZMK","ZMW","ZWL"];
@@ -25,14 +25,6 @@ const getRatesTest = "http://localhost:1337/api/convert/money?from=CZK&to=EUR&am
 
 const convertUrl = "http://localhost:1337/api/convert/money?"
 
-const countries = {
-  countries: [
-    {id: 'AFG', name: 'Afghanistan'},
-    {id: 'ALA', name: 'Aland Islands'},
-    {id: 'ALB', name: 'Albania'}
-  ]
-};
-
 function App() {
 
   // Hooks for handling input
@@ -45,21 +37,29 @@ function App() {
   const [currencyToAmount, setCurrencyToAmount] = useState("");
   const [exchangeRate, setExchangeRate] = useState("");
   const [history, setHistory] = useState({});
+  const [quickStats, setQuickStats] = useState({currBought:"EUR",  currBoughtAmount:1562, currSold: "USD", currSoldAmount : 489999})
 
   // init selectboxes
-  const [currencies, setCurrencies] = useState(currencyList);
+  const [currencies] = useState(currencyList);
+
+  // transactions
+  const [transactions, setTransactions] = useState<ITransaction[]>([])
+
+
+  // 
+  useEffect(() => {
+    fetchTransactions()
+  }, [])
+
+  const fetchTransactions = (): void => {
+    getTransactions()
+    .then(({ data: { transactions } }: ITransaction[] | any) => console.log(transactions))
+    .catch((err: Error) => console.log(err))
+  }
 
 
 
-interface IConverResult {
-  amount: number,
-  from: string
-  message: string,
-  result: number,
-  to: string
-}
 
-//let map = new Map<string,string>(rates);
 
 // 
   const handleConvertClicked = async () => {
@@ -75,28 +75,95 @@ interface IConverResult {
 
     // First API call related to the checkbox
     const resConvert = await axios(request);
-    console.log("Calling our convert API: " + request);
-    console.log("convert result: ");
-    console.log(resConvert);
+    // console.log("Calling our convert API: " + request);
+    // console.log("convert result: ");
+    // console.log(resConvert);
+    // console.log(resConvert.data);
 
-    console.log(resConvert.data);
-
-    const convertResult = resConvert.data as IConverResult;
+    const convertResult = resConvert.data as IConvertResult;
 
     setCurrencyToAmount(convertResult.result.toFixed(2));
-    console.log(`Mame vysledek: ${convertResult.result}`);
+    // console.log(`Mame vysledek: ${convertResult.result}`);
     
     // tady vypocitame kurz
     const exchangeRate = computeTransferRate(convertResult.amount, convertResult.result);
     // console.log(`Exchange rate: ${exchangeRate}`);
     setExchangeRate(exchangeRate.toFixed(2));
 
+
+
+    const str = convertResult.from;
+    const num = convertResult.amount;
+
+    // test nastaveni quickStats
+    setQuickStats({currBought:str,  currBoughtAmount:num, currSold: str, currSoldAmount : num});
+
+    // refresh database
+    refreshDatabase();
+
+
+
+}
+
+const handleClearDBClicked = async () =>{
+  console.log("let's clear the database");
+
+  // call database clear
+  const historyUrl = "http://localhost:1337/api/transaction/clear"
+  const request = historyUrl;
+
+  const resHistory = await axios(request);
+  console.log(resHistory);
+
+
+
+}
+
+
+
+// type Props = TransactionProps & {
+//   updateTransaction: (todo: ITransaction) => void
+//   deleteTransaction: (_id: string) => void
+// }
+
+
+// const [todos, setTodos] = useState<ITransaction[]>([])
+
+// useEffect(() => {
+//   fetchTodos()
+// }, [])
+
+
+
+const refreshDatabase = async() => {
+
+  console.log("refresh database");
+
+    // call history refresh
+    //const historyUrl = "http://localhost:1337/api/transaction"
+    // const resHistory = await axios(historyUrl);
+    // console.log(resHistory);
+
+
+
+    // get new database
+    const transactions = fetchTransactions();
+
+    console.log("Jsme v App.tsx");
+    console.log(transactions);
+  
+
+    // refresh stats
+
+    // make some quick calculations
+
+
 }
 
 
 const handleInputCurrFromChanged = (event: ChangeEvent<{ value: string }>) => {
   setCurrencyFrom(event?.currentTarget?.value);
-  // console.log("currency from changed to: " + currencyFrom);
+  // console.log("currencyfrom changed to: " + currencyFrom);
 }
 
 const handleInputCurrFromAmountChanged = (event: ChangeEvent<{ value: string }>) => {
@@ -109,35 +176,28 @@ const handleInputCurrFromAmountChanged = (event: ChangeEvent<{ value: string }>)
 
   var number = parseFloat(value);
   setCurrencyFromAmount(number);
-  // console.log("currency from amount changed to: " + currencyFromAmount);
+  // console.log("currencyfrom amount changed to: " + currencyFromAmount);
 }
 
 
 const handleInputCurrToChanged = (event: ChangeEvent<{ value: string }>) => {
   setCurrencyTo(event?.currentTarget?.value);
-  // console.log("currency to changed to: " + currencyTo);
+  // console.log("currencyto changed to: " + currencyTo);
 }
 
 
-const computeTransferRate = (par1:number, par2:number) => {
+const computeTransferRate = (x:number, y:number) => {
 
   // check for null div
-  if(par1 === 0) {
+  if(x === 0) {
     return 0;}
 
-  if(par2 === 0) {
+  if(y === 0) {
     return 0;}
 
-  return par1/par2;
+  return x/y;
 }
 
-
-// let countriesList = countries.length > 0
-// 		&& countries.map((item, i) => {
-// 		return (
-// 			<option key={i} value={item.id}>{item.name}</option>
-// 		)
-// 	};
 
   return (
     <div>
@@ -170,12 +230,12 @@ const computeTransferRate = (par1:number, par2:number) => {
               </div>
               {/* <!-- exchange rate --> */}
               <div className="pure-u-1-5">
-                  <p>Exchange Rate<br/><input type="text" size={inputMax} id="exchangeRate" className="input-result" name="exchangeRate" disabled value={exchangeRate}/></p>
+                  <p>Rate<br/><input type="text" size={inputMax} id="exchangeRate" className="input-result" name="exchangeRate" disabled value={exchangeRate}/></p>
               </div>
-              {/* <!-- convert button --> */}
+              {/* <!-- convert and clear DB buttons --> */}
             </div>
             <p><button onClick={handleConvertClicked} className="pure-button pure-button-primary">Convert</button></p>
-            <p><button onClick={handleConvertClicked} className="pure-button pure-button-primary">Clear Database</button></p>
+            <p><button onClick={handleClearDBClicked} className="pure-button pure-button-primary">Clear Database</button></p>
           </div>
 
 
@@ -187,7 +247,8 @@ const computeTransferRate = (par1:number, par2:number) => {
 
           <h3 className="content-subhead is-center">Quick Stats</h3>
           <p className="is-center">Receiving all the transactions and making easy calculations on client side. Scroll down to browse transaction history.</p> 
-          <QuickStats currBought="EUR" currBoughtAmount={1562} currSold="USD" currSoldAmount={489999}/>
+          {/* <QuickStats currBought="EUR" currBoughtAmount={1562} currSold="USD" currSoldAmount={489999}/> */}
+          <QuickStats currBought={quickStats.currBought} currBoughtAmount={quickStats.currBoughtAmount} currSold={quickStats.currSold} currSoldAmount={quickStats.currSoldAmount}/>
 
           <h3 className="content-subhead is-center">Transaction History</h3>
           <History />
