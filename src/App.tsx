@@ -1,6 +1,5 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
+// /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { ChangeEvent, useEffect, useState } from "react";
-//import TodoList from "./components/TodoList";
 import axios, { AxiosResponse } from "axios";
 import QuickStats from "./components/QuickStats";
 import History from "./components/History";
@@ -31,20 +30,14 @@ function App() {
   const [currencyFrom, setCurrencyFrom] = useState("EUR"); // currency from
   const [currencyFromAmount, setCurrencyFromAmount] = useState(1); // currency from amount
   const [currencyTo, setCurrencyTo] = useState("EUR"); // currency To
-  
-
-  // Hooks for handling results
-  const [currencyToAmount, setCurrencyToAmount] = useState("");
-  const [exchangeRate, setExchangeRate] = useState("");
-  const [history, setHistory] = useState({});
-  const [quickStats, setQuickStats] = useState({currBought:"EUR",  currBoughtAmount:1562, currSold: "USD", currSoldAmount : 489999})
-
-  // init selectboxes
   const [currencies] = useState(currencyList);
 
-  // transactions
-  // const [transactions, setTransactions] = useState<ITransaction[]>([])
+    // Hooks for handling results
+  const [currencyToAmount, setCurrencyToAmount] = useState("");
+  const [exchangeRate, setExchangeRate] = useState("");
+  const [quickStats, setQuickStats] = useState({currBought:"EUR",  currBoughtAmount:1562, currSold: "USD", currSoldAmount : 489999})
 
+  // Transcations
   const [transactions, setTransactions] = useState<ITransaction[]>([])
     useEffect(() => {
       fetchTransactions()
@@ -57,9 +50,6 @@ function App() {
   }
 
 
-
-
-
 // 
   const handleConvertClicked = async () => {
 
@@ -70,38 +60,30 @@ function App() {
     var request = convertUrl + `from=${currencyFrom}&to=${currencyTo}&amount=${currencyFromAmount}`;
     console.log(`request URL: ${request}`)
 
-    // from=CZK&to=EUR&amount=5378
-
     // First API call related to the checkbox
     const resConvert = await axios(request);
-    // console.log("Calling our convert API: " + request);
-    // console.log("convert result: ");
-    // console.log(resConvert);
-    // console.log(resConvert.data);
-
     const convertResult = resConvert.data as IConvertResult;
-
     setCurrencyToAmount(convertResult.result.toFixed(2));
-    // console.log(`Mame vysledek: ${convertResult.result}`);
     
     // tady vypocitame kurz
     const exchangeRate = computeTransferRate(convertResult.amount, convertResult.result);
-    // console.log(`Exchange rate: ${exchangeRate}`);
     setExchangeRate(exchangeRate.toFixed(2));
 
 
 
+
+
+
+
+
+    // test nastaveni quickStats
     const str = convertResult.from;
     const num = convertResult.amount;
 
-    // test nastaveni quickStats
     setQuickStats({currBought:str,  currBoughtAmount:num, currSold: str, currSoldAmount : num});
 
     // refresh database
     refreshDatabase();
-
-
-
 }
 
 const handleClearDBClicked = async () =>{
@@ -112,7 +94,9 @@ const handleClearDBClicked = async () =>{
   const request = historyUrl;
 
   const resHistory = await axios(request);
-  console.log(resHistory);
+  // console.log(resHistory);
+
+  fetchTransactions();
 
 
 
@@ -124,15 +108,11 @@ const refreshDatabase = async() => {
     // const resHistory = await axios(http://localhost:1337/api/transaction);
 
     // get new database
-    const transactionsResult = fetchTransactions();
-
-    // setTransactions(transactions);
-  
-
+    fetchTransactions();
+ 
     // refresh stats
 
     // make some quick calculations
-
 
 }
 
