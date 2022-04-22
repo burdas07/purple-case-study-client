@@ -1,5 +1,5 @@
 // /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
 import axios, { AxiosResponse } from "axios";
 import QuickStats from "./components/QuickStats";
 import History from "./components/History";
@@ -11,18 +11,24 @@ const currencyList = ["AED","AFN","ALL","AMD","ANG","AOA","ARS","AUD","AWG","AZN
 // input fields size and max lenght
 var inputMax = 8;
 
-// Fixer consts -> EUR Base in default, 100 requests/month
-const baseUrlFixer = "http://data.fixer.io/api/latest";
-const API_KEY_FIXER = "097cd31d6a3fd259bc62cac11e08e5d1";
 
-// Open Exchange rate consts -> USD base in default, 1000 requests/month
-const baseUrlOER = "http://openexchangerates.org/api/latest.json"
-const API_KEY_OER =  "18abbc2925cf4d0384b83f625045a91a";
 
-const ratesAPI = "http://localhost:1337/api/convert/getrates";
-const getRatesTest = "http://localhost:1337/api/convert/money?from=CZK&to=EUR&amount=5378";
+/** PREDELAT DO .ENV !!!!!!!! */
+export const port = 1337;
+export const baseUrl = `http://localhost:${port}`
+export const convertApi = "/api/convert/money?"
+export const clearApi = "/api/transaction/clear"
+export const transactionApi = "/api/transaction"
 
-const convertUrl = "http://localhost:1337/api/convert/money?"
+
+export function useForceUpdate() {
+  const [, setTick] = useState(0);
+  const update = useCallback(() => {
+    setTick(tick => tick + 1);
+  }, [])
+  return update;
+}
+
 
 function App() {
 
@@ -35,7 +41,7 @@ function App() {
     // Hooks for handling results
   const [currencyToAmount, setCurrencyToAmount] = useState("");
   const [exchangeRate, setExchangeRate] = useState("");
-  const [quickStats, setQuickStats] = useState({currBought:"EUR",  currBoughtAmount:1562, currSold: "USD", currSoldAmount : 489999})
+  const [quickStats, setQuickStats] = useState({currBought:"EUR",  currBoughtAmount:0, currSold: "USD", currSoldAmount: 0})
 
   // Transcations
   const [transactions, setTransactions] = useState<ITransaction[]>([])
@@ -49,77 +55,143 @@ function App() {
     .catch((err: Error) => console.log(err))
   }
 
+  const clearGui = () => {
+    // setQuickStats({currBought:"EUR",  currBoughtAmount:0, currSold: "USD", currSoldAmount : 0});
+    setExchangeRate("");
+    setCurrencyToAmount("");
+  }
 
-// 
+  /** Convert Button */
   const handleConvertClicked = async () => {
 
-    console.log(`We are trying to convert ${currencyFromAmount} ${currencyFrom} into ${currencyTo}`);
-
     // osetrit vstupy na strane klienta!!!!
+    if(currencyFrom === currencyTo || (currencyFromAmount ===0)) {
+      setCurrencyToAmount("");
+      setExchangeRate("");
+      return;
+    }
+    
+    // create request
+    var request = `${baseUrl}${convertApi}from=${currencyFrom}&to=${currencyTo}&amount=${currencyFromAmount}`;
 
-    var request = convertUrl + `from=${currencyFrom}&to=${currencyTo}&amount=${currencyFromAmount}`;
-    console.log(`request URL: ${request}`)
-
-    // First API call related to the checkbox
+    // Call our API to receive convert result
     const resConvert = await axios(request);
     const convertResult = resConvert.data as IConvertResult;
     setCurrencyToAmount(convertResult.result.toFixed(2));
     
-    // tady vypocitame kurz
+    // exchange rate
     const exchangeRate = computeTransferRate(convertResult.amount, convertResult.result);
     setExchangeRate(exchangeRate.toFixed(2));
 
-
-
-
-
-
-
-
-    // test nastaveni quickStats
-    const str = convertResult.from;
-    const num = convertResult.amount;
-
-    setQuickStats({currBought:str,  currBoughtAmount:num, currSold: str, currSoldAmount : num});
+    // calculate statistics
+    computeQuickStats();
 
     // refresh database
-    refreshDatabase();
-}
-
-const handleClearDBClicked = async () =>{
-  console.log("let's clear the database");
-
-  // call database clear
-  const historyUrl = "http://localhost:1337/api/transaction/clear"
-  const request = historyUrl;
-
-  const resHistory = await axios(request);
-  // console.log(resHistory);
-
-  fetchTransactions();
-
-
-
-}
-
-const refreshDatabase = async() => {
-
-    // OBSOLETE!!
-    // const resHistory = await axios(http://localhost:1337/api/transaction);
-
-    // get new database
     fetchTransactions();
- 
-    // refresh stats
-
-    // make some quick calculations
-
+    
 }
 
+// not very effective, but simple
+const computeQuickStats = () => {
+
+  // Get most Sold Currency
+  var fromCurrencies: string[] = [];
+  for(var i=0; i<transactions.length; i++){
+
+    var currentFrom:string = transactions[i].from;
+
+    // eslint-disable-next-line no-loop-func
+    if(!fromCurrencies.find(elem => elem === currentFrom)){
+      fromCurrencies = fromCurrencies.concat(currentFrom);
+    }
+  }
+
+  var fromCurrenciesAmount: number[] = [];
+  for (i=0; i<fromCurrencies.length; i++){
+    var amountFrom:number =  getCurrencyFromSum(fromCurrencies[i]);
+    fromCurrenciesAmount.push(amountFrom);
+  }
+
+  const maxAmountFrom = Math.max(...fromCurrenciesAmount);
+  const indexFrom = fromCurrenciesAmount.indexOf(maxAmountFrom);
+  // console.log(`There is most ${fromCurrencies[indexFrom]} sold: ${fromCurrenciesAmount[indexFrom]}`);
+
+  var maxCurrencySold = fromCurrencies[indexFrom] || "EUR";
+  var maxCurrencySoldAmount = fromCurrenciesAmount[indexFrom] || 0;
+
+// --------------------------------------------------------------------------------------------
+    // Get most Bought Currency
+    var toCurrencies: string[] = [];
+    for(i=0; i<transactions.length; i++){
+        var currentTo:string = transactions[i].to;
+  
+      // eslint-disable-next-line no-loop-func
+      if(!toCurrencies.find(elem => elem === currentTo)){
+        toCurrencies = toCurrencies.concat(currentTo);
+      }
+    } 
+  
+    var toCurrenciesAmount: number[] = [];
+    for (i=0; i<toCurrencies.length; i++){
+      var amountTo:number =  getCurrencyToSum(toCurrencies[i]);
+      toCurrenciesAmount.push(amountTo);
+    }  
+    const maxAmountTo = Math.max(...toCurrenciesAmount);
+    const indexTo = toCurrenciesAmount.indexOf(maxAmountTo);
+
+    var maxCurrencyBought = toCurrencies[indexTo] || "USD";
+    var maxCurrencyBoughtAmount = toCurrenciesAmount[indexTo] || 0;
+
+    // console.log(`There is most ${maxCurrencyBought} bought: ${maxCurrencyBoughtAmount}`);
+    // console.log(`There is most ${maxCurrencySold} sold: ${maxCurrencySoldAmount}`);
+    setQuickStats({currBought:maxCurrencyBought,  currBoughtAmount:maxCurrencyBoughtAmount, currSold: maxCurrencySold, currSoldAmount : maxCurrencySoldAmount});
+}
+
+
+
+function getCurrencyFromSum (curr:string) :number
+{
+  var total = 0;
+  for(var i=0; i<transactions.length; i++){
+
+    if(transactions[i].from === curr){
+      total += transactions[i].amount;
+    };
+  }
+  // console.log(`Total ${curr} spent: ${total}`);
+  return total;
+}
+
+function getCurrencyToSum (curr:string) :number
+{
+  var total = 0;
+  for(var i=0; i<transactions.length; i++){
+
+    if(transactions[i].to === curr){
+      total += transactions[i].result;
+    };
+  }
+  // console.log(`Total ${curr} spent: ${total}`);
+  return total;
+}
+
+  /** Clear Database Button */
+const handleClearDBClicked = async () =>{
+
+  // call database clear and reload
+  const historyUrl = `${baseUrl}${clearApi}`;
+  const request = historyUrl;
+  await axios(request);
+  fetchTransactions();
+  clearGui();
+}
 
 const handleInputCurrFromChanged = (event: ChangeEvent<{ value: string }>) => {
   setCurrencyFrom(event?.currentTarget?.value);
-  // console.log("currencyfrom changed to: " + currencyFrom);
+}
+
+const handleInputCurrToChanged = (event: ChangeEvent<{ value: string }>) => {
+  setCurrencyTo(event?.currentTarget?.value);
 }
 
 const handleInputCurrFromAmountChanged = (event: ChangeEvent<{ value: string }>) => {
@@ -132,15 +204,7 @@ const handleInputCurrFromAmountChanged = (event: ChangeEvent<{ value: string }>)
 
   var number = parseFloat(value);
   setCurrencyFromAmount(number);
-  // console.log("currencyfrom amount changed to: " + currencyFromAmount);
 }
-
-
-const handleInputCurrToChanged = (event: ChangeEvent<{ value: string }>) => {
-  setCurrencyTo(event?.currentTarget?.value);
-  // console.log("currencyto changed to: " + currencyTo);
-}
-
 
 const computeTransferRate = (x:number, y:number) => {
 
@@ -151,9 +215,8 @@ const computeTransferRate = (x:number, y:number) => {
   if(y === 0) {
     return 0;}
 
-  return x/y;
+  return y/x;
 }
-
 
   return (
     <div>
@@ -165,7 +228,7 @@ const computeTransferRate = (x:number, y:number) => {
               <div className="pure-u-1-5">
                   <p>From<br/>
                   <select name="currency" id="currencyFrom" className="input-money-select" value={currencyFrom} onChange={handleInputCurrFromChanged}>
-                    {currencies.map((currencies) => <option>{currencies}</option>)}
+                    {currencies.map((currencies) => <option key={currencies}>{currencies}</option>)}
                   </select></p>
               </div>
               {/* <!-- from amount --> */}
@@ -193,8 +256,6 @@ const computeTransferRate = (x:number, y:number) => {
             <p><button onClick={handleConvertClicked} className="pure-button pure-button-primary">Convert</button></p>
             <p><button onClick={handleClearDBClicked} className="pure-button pure-button-primary">Clear Database</button></p>
           </div>
-
-
       </div>
 
       {/* transaction history */}
