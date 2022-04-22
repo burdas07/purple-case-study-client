@@ -43,17 +43,16 @@ function App() {
   const [currencies] = useState(currencyList);
 
   // transactions
+  // const [transactions, setTransactions] = useState<ITransaction[]>([])
+
   const [transactions, setTransactions] = useState<ITransaction[]>([])
-
-
-  // 
-  useEffect(() => {
-    fetchTransactions()
-  }, [])
+    useEffect(() => {
+      fetchTransactions()
+    }, []);
 
   const fetchTransactions = (): void => {
     getTransactions()
-    .then(({ data: { transactions } }: ITransaction[] | any) => console.log(transactions))
+    .then(({ data: { transactions } }: ITransaction[] | any) => setTransactions(transactions))
     .catch((err: Error) => console.log(err))
   }
 
@@ -119,38 +118,15 @@ const handleClearDBClicked = async () =>{
 
 }
 
-
-
-// type Props = TransactionProps & {
-//   updateTransaction: (todo: ITransaction) => void
-//   deleteTransaction: (_id: string) => void
-// }
-
-
-// const [todos, setTodos] = useState<ITransaction[]>([])
-
-// useEffect(() => {
-//   fetchTodos()
-// }, [])
-
-
-
 const refreshDatabase = async() => {
 
-  console.log("refresh database");
-
-    // call history refresh
-    //const historyUrl = "http://localhost:1337/api/transaction"
-    // const resHistory = await axios(historyUrl);
-    // console.log(resHistory);
-
-
+    // OBSOLETE!!
+    // const resHistory = await axios(http://localhost:1337/api/transaction);
 
     // get new database
-    const transactions = fetchTransactions();
+    const transactionsResult = fetchTransactions();
 
-    console.log("Jsme v App.tsx");
-    console.log(transactions);
+    // setTransactions(transactions);
   
 
     // refresh stats
@@ -251,7 +227,7 @@ const computeTransferRate = (x:number, y:number) => {
           <QuickStats currBought={quickStats.currBought} currBoughtAmount={quickStats.currBoughtAmount} currSold={quickStats.currSold} currSoldAmount={quickStats.currSoldAmount}/>
 
           <h3 className="content-subhead is-center">Transaction History</h3>
-          <History />
+          <History transactions={transactions}/>
         
       </div>
     </div>   

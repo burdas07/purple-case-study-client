@@ -5,7 +5,6 @@ import './styles/pure-min.css';
 import './styles/grids-responsive-min.css';
 import './styles/font-awesome.css';
 import './styles/style.css';
-//import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
