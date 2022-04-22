@@ -23,7 +23,7 @@ const History:  React.FC<Props> = ({transactions}) => {
             const { from, to, amount, result, createdAt } = transaction;
             return (
 
-                <tr>
+                <tr key={createdAt}>
                 <td>{from}</td>
                 <td>{amount}</td>
                 <td>{to}</td>

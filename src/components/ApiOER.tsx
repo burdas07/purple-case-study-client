@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { convert } from "cashify";
 
-
+/** Obsolete, not being used */
 const ApiOER = () => {
   
     // Open Exchange rate consts -> USD base in default

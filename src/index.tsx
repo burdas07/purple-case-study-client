@@ -8,6 +8,14 @@ import './styles/style.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+export const port = 1337;
+export const baseUrl = `http://localhost:${port}`
+export const convertApi = "/api/convert/money?"
+export const clearApi = "/api/transaction/clear"
+export const transactionApi = "/api/transaction"
+
+
+
 ReactDOM.render(
   <React.StrictMode>
     <App />

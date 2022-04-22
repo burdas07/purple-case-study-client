@@ -10,7 +10,6 @@ interface IQuickStats {
 // default values
 export const quickStatsDefault : IQuickStats = { currBought:"EUR", currBoughtAmount:0, currSold:"EUR", currSoldAmount:0 };
 
-//const quickStats = ({ currBought, currBoughtAmount, currSold, currSoldAmount} : IQuickStats) => {
 const quickStats: React.FC<IQuickStats> = ({ currBought, currBoughtAmount, currSold, currSoldAmount}) => {
 
     return (

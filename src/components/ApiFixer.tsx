@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { convert } from "cashify";
 
+/** Obsolete, not being used */
 const ApiFixer = () => {
     
     // Fixer consts -> EUR Base in default
