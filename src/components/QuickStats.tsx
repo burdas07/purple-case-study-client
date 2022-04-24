@@ -1,19 +1,18 @@
 import React from 'react';
 
-export interface IQuickStats {
-    currBought: string,
-    currBoughtAmount: number,
-    currSold: string,
-    currSoldAmount: number
-}
+type Props = QuickStatsProps;
 
 // default values
 // export const quickStatsDefault : IQuickStats = { currBought:"EUR", currBoughtAmount:0, currSold:"EUR", currSoldAmount:0 };
 
-const quickStats: React.FC<IQuickStats> = ({ currBought, currBoughtAmount, currSold, currSoldAmount}) => {
+// const quickStats: React.FC<IQuickStats> = ({ currBought, currBoughtAmount, currSold, currSoldAmount}) => {
+// const quickStats: React.FC<IQuickStats> = ({ currBought, currBoughtAmount, currSold, currSoldAmount}) => {
+const QuickStats:  React.FC<Props> = ({quickStats}) => {
+    
+
+    const { currBought, currBoughtAmount, currSold, currSoldAmount} = quickStats;
 
     return (
-
 
         <table className="pure-table pure-table-horizontal center">
         <tbody>
@@ -41,4 +40,4 @@ const quickStats: React.FC<IQuickStats> = ({ currBought, currBoughtAmount, currS
 
 };
 
-export default quickStats;
+export default QuickStats;

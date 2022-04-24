@@ -27,3 +27,14 @@ interface IConvertResult {
     result: number,
     to: string
   }
+
+interface IQuickStats {
+    currBought: string,
+    currBoughtAmount: number,
+    currSold: string,
+    currSoldAmount: number
+}
+
+interface QuickStatsProps {
+  quickStats: IQuickStats
+}

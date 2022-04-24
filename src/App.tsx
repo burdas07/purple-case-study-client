@@ -3,7 +3,6 @@ import React, { ChangeEvent, useEffect, useState } from "react";
 import axios, { AxiosResponse } from "axios";
 import QuickStats from "./components/QuickStats";
 import History from "./components/History";
-import { getTransactions } from "./API";
 
 // chtel jsem to inicializovat ze serveru pres api, ale whatever..
 const currencyList = ["AED","AFN","ALL","AMD","ANG","AOA","ARS","AUD","AWG","AZN","BAM","BBD","BDT","BGN","BHD","BIF","BMD","BND","BOB","BRL","BSD","BTC","BTN","BWP","BYN","BYR","BZD","CAD","CDF","CHF","CLF","CLP","CNY","COP","CRC","CUC","CUP","CVE","CZK","DJF","DKK","DOP","DZD","EGP","ERN","ETB","EUR","FJD","FKP","GBP","GEL","GGP","GHS","GIP","GMD","GNF","GTQ","GYD","HKD","HNL","HRK","HTG","HUF","IDR","ILS","IMP","INR","IQD","IRR","ISK","JEP","JMD","JOD","JPY","KES","KGS","KHR","KMF","KPW","KRW","KWD","KYD","KZT","LAK","LBP","LKR","LRD","LSL","LTL","LVL","LYD","MAD","MDL","MGA","MKD","MMK","MNT","MOP","MRO","MUR","MVR","MWK","MXN","MYR","MZN","NAD","NGN","NIO","NOK","NPR","NZD","OMR","PAB","PEN","PGK","PHP","PKR","PLN","PYG","QAR","RON","RSD","RUB","RWF","SAR","SBD","SCR","SDG","SEK","SGD","SHP","SLL","SOS","SRD","STD","SVC","SYP","SZL","THB","TJS","TMT","TND","TOP","TRY","TTD","TWD","TZS","UAH","UGX","USD","UYU","UZS","VEF","VND","VUV","WST","XAF","XAG","XAU","XCD","XDR","XOF","XPF","YER","ZAR","ZMK","ZMW","ZWL"];
@@ -19,6 +18,7 @@ export const baseUrl = `http://localhost:${port}`
 export const convertApi = "/api/convert/money?"
 export const clearApi = "/api/transaction/clear"
 export const transactionApi = "/api/transaction"
+export const transactionUrl= "http://localhost:1337/api/transaction";
 
 
 // export function useForceUpdate() {
@@ -35,31 +35,31 @@ function App() {
   // Hooks for handling input
   const [currencyFrom, setCurrencyFrom] = useState("EUR"); // currency from
   const [currencyFromAmount, setCurrencyFromAmount] = useState(1); // currency from amount
-  const [currencyTo, setCurrencyTo] = useState("EUR"); // currency To
+  const [currencyTo, setCurrencyTo] = useState("USD"); // currency To
   const [currencies] = useState(currencyList);
 
     // Hooks for handling results
   const [currencyToAmount, setCurrencyToAmount] = useState("");
   const [exchangeRate, setExchangeRate] = useState("");
-  // const [quickStats, setQuickStats] = useState<IQuickStats>();
-  const [quickStats, setQuickStats] = useState({currBought:"EUR",  currBoughtAmount:0, currSold: "USD", currSoldAmount: 0});
-  useEffect(() => {
-    console.log("Running quickStats useEffect");
-    // console.log(`Current values =${quickStats.currBought} ${quickStats.currBoughtAmount} ${quickStats.currSold} ${quickStats.currSoldAmount}`);
-    computeQuickStats();
-  }, []);
-  // useEffect(() => {
-  //   fetchTransactions();
-  //   clearGui();
-  // },[]);
-
+  const [quickStats, setQuickStats] = useState<IQuickStats>({currBought:"",  currBoughtAmount:0, currSold: "", currSoldAmount: 0});
+  // const [quickStats, setQuickStats] = useState({currBought:"EUR",  currBoughtAmount:0, currSold: "USD", currSoldAmount: 0});
   
   // Transcations
   const [transactions, setTransactions] = useState<ITransaction[]>([])
-    useEffect(() => {
-      console.log(`Running Transaction useeffect`);
-      fetchTransactions()
+  useEffect(() => {
+    console.log(`Running Transaction useeffect`);
+      console.log(transactions);
+      fetchTransactions();
     }, []);
+
+  // quickstats are dependant on transaction change
+  useEffect(() => {
+    console.log("Running quickStats useEffect");
+    console.log(transactions);
+    computeQuickStats();
+    // console.log(`Current values =${quickStats.currBought} ${quickStats.currBoughtAmount} ${quickStats.currSold} ${quickStats.currSoldAmount}`);
+  // });
+  },transactions);
 
   const fetchTransactions = (): void => {
     getTransactions()
@@ -67,8 +67,8 @@ function App() {
     .catch((err: Error) => console.log(err))
   }
 
-
   const clearGui = () => {
+      
     setQuickStats({currBought:"",  currBoughtAmount:0, currSold: "", currSoldAmount : 0});
     setExchangeRate("");
     setCurrencyToAmount("");
@@ -96,16 +96,36 @@ function App() {
     const exchangeRate = computeTransferRate(convertResult.amount, convertResult.result);
     setExchangeRate(exchangeRate.toFixed(2));
 
-    // calculate statistics
-    computeQuickStats();
-
     // refresh database
     fetchTransactions();
+
+    // calculate statistics
+    computeQuickStats();
     
 }
 
+
+const getTransactions = async (): Promise<AxiosResponse<ApiDataType>> => {
+  try {
+    const transactions: AxiosResponse<ApiDataType> = await axios.get(transactionUrl);
+    console.log("receiving transactions via api");
+    console.log(transactions);
+    
+    return transactions
+
+  } catch (error) {
+    throw new Error("Something bad happened")
+  } finally {
+    // compute quickStats here maybe?
+
+  }
+}
+
 // not very effective, but simple
-const computeQuickStats = () => {
+const computeQuickStats = () : void => {
+
+  console.log("Calculating quickstats....");
+  console.log(transactions);
 
   // Get most Sold Currency
   var fromCurrencies: string[] = [];
@@ -129,7 +149,7 @@ const computeQuickStats = () => {
   const indexFrom = fromCurrenciesAmount.indexOf(maxAmountFrom);
   // console.log(`There is most ${fromCurrencies[indexFrom]} sold: ${fromCurrenciesAmount[indexFrom]}`);
 
-  var maxCurrencySold = fromCurrencies[indexFrom] || "EUR";
+  var maxCurrencySold = fromCurrencies[indexFrom] || "";
   var maxCurrencySoldAmount = fromCurrenciesAmount[indexFrom] || 0;
 
 // --------------------------------------------------------------------------------------------
@@ -152,11 +172,11 @@ const computeQuickStats = () => {
     const maxAmountTo = Math.max(...toCurrenciesAmount);
     const indexTo = toCurrenciesAmount.indexOf(maxAmountTo);
 
-    var maxCurrencyBought = toCurrencies[indexTo] || "USD";
+    var maxCurrencyBought = toCurrencies[indexTo] || "";
     var maxCurrencyBoughtAmount = toCurrenciesAmount[indexTo] || 0;
 
-    // console.log(`There is most ${maxCurrencyBought} bought: ${maxCurrencyBoughtAmount}`);
-    // console.log(`There is most ${maxCurrencySold} sold: ${maxCurrencySoldAmount}`);
+    console.log(`There is most ${maxCurrencyBought} bought: ${maxCurrencyBoughtAmount}`);
+    console.log(`There is most ${maxCurrencySold} sold: ${maxCurrencySoldAmount}`);
     setQuickStats({currBought:maxCurrencyBought,  currBoughtAmount:maxCurrencyBoughtAmount, currSold: maxCurrencySold, currSoldAmount : maxCurrencySoldAmount});
 }
 
@@ -196,6 +216,7 @@ const handleClearDBClicked = async () =>{
   const request = historyUrl;
   await axios(request);
   fetchTransactions();
+  computeQuickStats();
   clearGui();
 }
 
@@ -230,6 +251,9 @@ const computeTransferRate = (x:number, y:number) => {
 
   return y/x;
 }
+
+  console.log("In App");
+  console.log(transactions);
 
   return (
     <div>
@@ -277,9 +301,7 @@ const computeTransferRate = (x:number, y:number) => {
 
           <h3 className="content-subhead is-center">Quick Stats</h3>
           <p className="is-center">Receiving all the transactions and making easy calculations on client side. Scroll down to browse transaction history.</p> 
-          {/* <QuickStats currBought="EUR" currBoughtAmount={1562} currSold="USD" currSoldAmount={489999}/> */}
-          {/* <QuickStats currBought={quickStats.currBought} currBoughtAmount={quickStats.currBoughtAmount} currSold={quickStats.currSold} currSoldAmount={quickStats.currSoldAmount}/> */}
-          <QuickStats currBought={quickStats.currBought} currBoughtAmount={quickStats.currBoughtAmount} currSold={quickStats.currSold} currSoldAmount={quickStats.currSoldAmount}/>
+          <QuickStats quickStats={quickStats}/>
 
           <h3 className="content-subhead is-center">Transaction History</h3>
           <History transactions={transactions}/>
