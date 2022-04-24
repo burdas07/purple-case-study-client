@@ -6,10 +6,8 @@ import History from "./components/History";
 
 // chtel jsem to inicializovat ze serveru pres api, ale whatever..
 const currencyList = ["AED","AFN","ALL","AMD","ANG","AOA","ARS","AUD","AWG","AZN","BAM","BBD","BDT","BGN","BHD","BIF","BMD","BND","BOB","BRL","BSD","BTC","BTN","BWP","BYN","BYR","BZD","CAD","CDF","CHF","CLF","CLP","CNY","COP","CRC","CUC","CUP","CVE","CZK","DJF","DKK","DOP","DZD","EGP","ERN","ETB","EUR","FJD","FKP","GBP","GEL","GGP","GHS","GIP","GMD","GNF","GTQ","GYD","HKD","HNL","HRK","HTG","HUF","IDR","ILS","IMP","INR","IQD","IRR","ISK","JEP","JMD","JOD","JPY","KES","KGS","KHR","KMF","KPW","KRW","KWD","KYD","KZT","LAK","LBP","LKR","LRD","LSL","LTL","LVL","LYD","MAD","MDL","MGA","MKD","MMK","MNT","MOP","MRO","MUR","MVR","MWK","MXN","MYR","MZN","NAD","NGN","NIO","NOK","NPR","NZD","OMR","PAB","PEN","PGK","PHP","PKR","PLN","PYG","QAR","RON","RSD","RUB","RWF","SAR","SBD","SCR","SDG","SEK","SGD","SHP","SLL","SOS","SRD","STD","SVC","SYP","SZL","THB","TJS","TMT","TND","TOP","TRY","TTD","TWD","TZS","UAH","UGX","USD","UYU","UZS","VEF","VND","VUV","WST","XAF","XAG","XAU","XCD","XDR","XOF","XPF","YER","ZAR","ZMK","ZMW","ZWL"];
-
 // input fields size and max lenght
 var inputMax = 8;
-
 
 
 /** PREDELAT DO .ENV !!!!!!!! */
@@ -18,16 +16,7 @@ export const baseUrl = `http://localhost:${port}`
 export const convertApi = "/api/convert/money?"
 export const clearApi = "/api/transaction/clear"
 export const transactionApi = "/api/transaction"
-export const transactionUrl= "http://localhost:1337/api/transaction";
-
-
-// export function useForceUpdate() {
-//   const [, setTick] = useState(0);
-//   const update = useCallback(() => {
-//     setTick(tick => tick + 1);
-//   }, [])
-//   return update;
-// }
+export const transactionUrl= `${baseUrl}${transactionApi}`;
 
 
 function App() {
@@ -42,23 +31,16 @@ function App() {
   const [currencyToAmount, setCurrencyToAmount] = useState("");
   const [exchangeRate, setExchangeRate] = useState("");
   const [quickStats, setQuickStats] = useState<IQuickStats>({currBought:"",  currBoughtAmount:0, currSold: "", currSoldAmount: 0});
-  // const [quickStats, setQuickStats] = useState({currBought:"EUR",  currBoughtAmount:0, currSold: "USD", currSoldAmount: 0});
   
   // Transcations
   const [transactions, setTransactions] = useState<ITransaction[]>([])
   useEffect(() => {
-    console.log(`Running Transaction useeffect`);
-      console.log(transactions);
       fetchTransactions();
     }, []);
 
-  // quickstats are dependant on transaction change
+  // Quickstats are dependant on transaction change
   useEffect(() => {
-    console.log("Running quickStats useEffect");
-    console.log(transactions);
-    computeQuickStats();
-    // console.log(`Current values =${quickStats.currBought} ${quickStats.currBoughtAmount} ${quickStats.currSold} ${quickStats.currSoldAmount}`);
-  // });
+    calculateQuickStats();
   },[transactions]);
 
   const fetchTransactions = (): void => {
@@ -69,7 +51,6 @@ function App() {
   }
 
   const clearGui = () => {
-      
     setQuickStats({currBought:"",  currBoughtAmount:0, currSold: "", currSoldAmount : 0});
     setExchangeRate("");
     setCurrencyToAmount("");
@@ -78,7 +59,7 @@ function App() {
   /** Convert Button */
   const handleConvertClicked = async () => {
 
-    // osetrit vstupy na strane klienta!!!!
+    // i guess nothing worse can happen here
     if(currencyFrom === currencyTo || (currencyFromAmount ===0)) {
       setCurrencyToAmount("");
       setExchangeRate("");
@@ -101,32 +82,22 @@ function App() {
     fetchTransactions();
 
     // calculate statistics
-    computeQuickStats();
-    
+    calculateQuickStats();
 }
 
 
 const getTransactions = async (): Promise<AxiosResponse<ApiDataType>> => {
   try {
     const transactions: AxiosResponse<ApiDataType> = await axios.get(transactionUrl);
-    console.log("receiving transactions via api");
-    console.log(transactions);
-    
     return transactions
 
   } catch (error) {
     throw new Error("Something bad happened")
-  } finally {
-    // compute quickStats here maybe?
-
   }
 }
 
 // not very effective, but simple
-const computeQuickStats = () : void => {
-
-  console.log("Calculating quickstats....");
-  console.log(transactions);
+const calculateQuickStats = () : void => {
 
   // Get most Sold Currency
   var fromCurrencies: string[] = [];
@@ -152,8 +123,7 @@ const computeQuickStats = () : void => {
 
   var maxCurrencySold = fromCurrencies[indexFrom] || "";
   var maxCurrencySoldAmount = fromCurrenciesAmount[indexFrom] || 0;
-
-// --------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------------------
     // Get most Bought Currency
     var toCurrencies: string[] = [];
     for(i=0; i<transactions.length; i++){
@@ -176,12 +146,10 @@ const computeQuickStats = () : void => {
     var maxCurrencyBought = toCurrencies[indexTo] || "";
     var maxCurrencyBoughtAmount = toCurrenciesAmount[indexTo] || 0;
 
-    console.log(`There is most ${maxCurrencyBought} bought: ${maxCurrencyBoughtAmount}`);
-    console.log(`There is most ${maxCurrencySold} sold: ${maxCurrencySoldAmount}`);
+    // console.log(`There is most ${maxCurrencyBought} bought: ${maxCurrencyBoughtAmount}`);
+    // console.log(`There is most ${maxCurrencySold} sold: ${maxCurrencySoldAmount}`);
     setQuickStats({currBought:maxCurrencyBought,  currBoughtAmount:maxCurrencyBoughtAmount, currSold: maxCurrencySold, currSoldAmount : maxCurrencySoldAmount});
 }
-
-
 
 function getCurrencyFromSum (curr:string) :number
 {
@@ -217,7 +185,7 @@ const handleClearDBClicked = async () =>{
   const request = historyUrl;
   await axios(request);
   fetchTransactions();
-  computeQuickStats();
+  calculateQuickStats();
   clearGui();
 }
 
@@ -242,8 +210,7 @@ const handleInputCurrFromAmountChanged = (event: ChangeEvent<{ value: string }>)
 }
 
 const computeTransferRate = (x:number, y:number) => {
-
-  // check for null div
+  // check null div
   if(x === 0) {
     return 0;}
 
@@ -252,9 +219,6 @@ const computeTransferRate = (x:number, y:number) => {
 
   return y/x;
 }
-
-  console.log("In App");
-  console.log(transactions);
 
   return (
     <div>
