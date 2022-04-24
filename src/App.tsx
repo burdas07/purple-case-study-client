@@ -1,5 +1,5 @@
 // /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import axios, { AxiosResponse } from "axios";
 import QuickStats from "./components/QuickStats";
 import History from "./components/History";
@@ -21,13 +21,13 @@ export const clearApi = "/api/transaction/clear"
 export const transactionApi = "/api/transaction"
 
 
-export function useForceUpdate() {
-  const [, setTick] = useState(0);
-  const update = useCallback(() => {
-    setTick(tick => tick + 1);
-  }, [])
-  return update;
-}
+// export function useForceUpdate() {
+//   const [, setTick] = useState(0);
+//   const update = useCallback(() => {
+//     setTick(tick => tick + 1);
+//   }, [])
+//   return update;
+// }
 
 
 function App() {
@@ -41,11 +41,23 @@ function App() {
     // Hooks for handling results
   const [currencyToAmount, setCurrencyToAmount] = useState("");
   const [exchangeRate, setExchangeRate] = useState("");
-  const [quickStats, setQuickStats] = useState({currBought:"EUR",  currBoughtAmount:0, currSold: "USD", currSoldAmount: 0})
+  // const [quickStats, setQuickStats] = useState<IQuickStats>();
+  const [quickStats, setQuickStats] = useState({currBought:"EUR",  currBoughtAmount:0, currSold: "USD", currSoldAmount: 0});
+  useEffect(() => {
+    console.log("Running quickStats useEffect");
+    // console.log(`Current values =${quickStats.currBought} ${quickStats.currBoughtAmount} ${quickStats.currSold} ${quickStats.currSoldAmount}`);
+    computeQuickStats();
+  }, []);
+  // useEffect(() => {
+  //   fetchTransactions();
+  //   clearGui();
+  // },[]);
 
+  
   // Transcations
   const [transactions, setTransactions] = useState<ITransaction[]>([])
     useEffect(() => {
+      console.log(`Running Transaction useeffect`);
       fetchTransactions()
     }, []);
 
@@ -55,8 +67,9 @@ function App() {
     .catch((err: Error) => console.log(err))
   }
 
+
   const clearGui = () => {
-    // setQuickStats({currBought:"EUR",  currBoughtAmount:0, currSold: "USD", currSoldAmount : 0});
+    setQuickStats({currBought:"",  currBoughtAmount:0, currSold: "", currSoldAmount : 0});
     setExchangeRate("");
     setCurrencyToAmount("");
   }
@@ -265,6 +278,7 @@ const computeTransferRate = (x:number, y:number) => {
           <h3 className="content-subhead is-center">Quick Stats</h3>
           <p className="is-center">Receiving all the transactions and making easy calculations on client side. Scroll down to browse transaction history.</p> 
           {/* <QuickStats currBought="EUR" currBoughtAmount={1562} currSold="USD" currSoldAmount={489999}/> */}
+          {/* <QuickStats currBought={quickStats.currBought} currBoughtAmount={quickStats.currBoughtAmount} currSold={quickStats.currSold} currSoldAmount={quickStats.currSoldAmount}/> */}
           <QuickStats currBought={quickStats.currBought} currBoughtAmount={quickStats.currBoughtAmount} currSold={quickStats.currSold} currSoldAmount={quickStats.currSoldAmount}/>
 
           <h3 className="content-subhead is-center">Transaction History</h3>

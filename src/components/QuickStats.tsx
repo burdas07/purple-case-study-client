@@ -1,6 +1,6 @@
 import React from 'react';
 
-interface IQuickStats {
+export interface IQuickStats {
     currBought: string,
     currBoughtAmount: number,
     currSold: string,
@@ -8,7 +8,7 @@ interface IQuickStats {
 }
 
 // default values
-export const quickStatsDefault : IQuickStats = { currBought:"EUR", currBoughtAmount:0, currSold:"EUR", currSoldAmount:0 };
+// export const quickStatsDefault : IQuickStats = { currBought:"EUR", currBoughtAmount:0, currSold:"EUR", currSoldAmount:0 };
 
 const quickStats: React.FC<IQuickStats> = ({ currBought, currBoughtAmount, currSold, currSoldAmount}) => {
 
