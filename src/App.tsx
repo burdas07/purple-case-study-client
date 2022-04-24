@@ -59,9 +59,10 @@ function App() {
     computeQuickStats();
     // console.log(`Current values =${quickStats.currBought} ${quickStats.currBoughtAmount} ${quickStats.currSold} ${quickStats.currSoldAmount}`);
   // });
-  },transactions);
+  },[transactions]);
 
   const fetchTransactions = (): void => {
+
     getTransactions()
     .then(({ data: { transactions } }: ITransaction[] | any) => setTransactions(transactions))
     .catch((err: Error) => console.log(err))
