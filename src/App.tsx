@@ -9,15 +9,12 @@ const currencyList = ["AED","AFN","ALL","AMD","ANG","AOA","ARS","AUD","AWG","AZN
 // input fields size and max lenght
 var inputMax = 8;
 
-
-/** PREDELAT DO .ENV !!!!!!!! */
 export const port = 1337;
 export const baseUrl = `http://localhost:${port}`
 export const convertApi = "/api/convert/money?"
 export const clearApi = "/api/transaction/clear"
 export const transactionApi = "/api/transaction"
 export const transactionUrl= `${baseUrl}${transactionApi}`;
-
 
 function App() {
 
@@ -83,142 +80,142 @@ function App() {
 
     // calculate statistics
     calculateQuickStats();
-}
-
-
-const getTransactions = async (): Promise<AxiosResponse<ApiDataType>> => {
-  try {
-    const transactions: AxiosResponse<ApiDataType> = await axios.get(transactionUrl);
-    return transactions
-
-  } catch (error) {
-    throw new Error("Something bad happened")
   }
-}
 
-// not very effective, but simple
-const calculateQuickStats = () : void => {
 
-  // Get most Sold Currency
-  var fromCurrencies: string[] = [];
-  for(var i=0; i<transactions.length; i++){
+  const getTransactions = async (): Promise<AxiosResponse<ApiDataType>> => {
+    try {
+      const transactions: AxiosResponse<ApiDataType> = await axios.get(transactionUrl);
+      return transactions
 
-    var currentFrom:string = transactions[i].from;
-
-    // eslint-disable-next-line no-loop-func
-    if(!fromCurrencies.find(elem => elem === currentFrom)){
-      fromCurrencies = fromCurrencies.concat(currentFrom);
+    } catch (error) {
+      throw new Error("Something bad happened")
     }
   }
 
-  var fromCurrenciesAmount: number[] = [];
-  for (i=0; i<fromCurrencies.length; i++){
-    var amountFrom:number =  getCurrencyFromSum(fromCurrencies[i]);
-    fromCurrenciesAmount.push(amountFrom);
-  }
+  // not very effective, but simple
+  const calculateQuickStats = () : void => {
 
-  const maxAmountFrom = Math.max(...fromCurrenciesAmount);
-  const indexFrom = fromCurrenciesAmount.indexOf(maxAmountFrom);
-  // console.log(`There is most ${fromCurrencies[indexFrom]} sold: ${fromCurrenciesAmount[indexFrom]}`);
+    // Get most Sold Currency
+    var fromCurrencies: string[] = [];
+    for(var i=0; i<transactions.length; i++){
 
-  var maxCurrencySold = fromCurrencies[indexFrom] || "";
-  var maxCurrencySoldAmount = fromCurrenciesAmount[indexFrom] || 0;
-// -----------------------------------------------------------------------------------------------------
-    // Get most Bought Currency
-    var toCurrencies: string[] = [];
-    for(i=0; i<transactions.length; i++){
-        var currentTo:string = transactions[i].to;
-  
+      var currentFrom:string = transactions[i].from;
+
       // eslint-disable-next-line no-loop-func
-      if(!toCurrencies.find(elem => elem === currentTo)){
-        toCurrencies = toCurrencies.concat(currentTo);
+      if(!fromCurrencies.find(elem => elem === currentFrom)){
+        fromCurrencies = fromCurrencies.concat(currentFrom);
       }
-    } 
-  
-    var toCurrenciesAmount: number[] = [];
-    for (i=0; i<toCurrencies.length; i++){
-      var amountTo:number =  getCurrencyToSum(toCurrencies[i]);
-      toCurrenciesAmount.push(amountTo);
-    }  
-    const maxAmountTo = Math.max(...toCurrenciesAmount);
-    const indexTo = toCurrenciesAmount.indexOf(maxAmountTo);
+    }
 
-    var maxCurrencyBought = toCurrencies[indexTo] || "";
-    var maxCurrencyBoughtAmount = toCurrenciesAmount[indexTo] || 0;
+    var fromCurrenciesAmount: number[] = [];
+    for (i=0; i<fromCurrencies.length; i++){
+      var amountFrom:number =  getCurrencyFromSum(fromCurrencies[i]);
+      fromCurrenciesAmount.push(amountFrom);
+    }
 
-    // console.log(`There is most ${maxCurrencyBought} bought: ${maxCurrencyBoughtAmount}`);
-    // console.log(`There is most ${maxCurrencySold} sold: ${maxCurrencySoldAmount}`);
-    setQuickStats({currBought:maxCurrencyBought,  currBoughtAmount:maxCurrencyBoughtAmount, currSold: maxCurrencySold, currSoldAmount : maxCurrencySoldAmount});
-}
+    const maxAmountFrom = Math.max(...fromCurrenciesAmount);
+    const indexFrom = fromCurrenciesAmount.indexOf(maxAmountFrom);
+    // console.log(`There is most ${fromCurrencies[indexFrom]} sold: ${fromCurrenciesAmount[indexFrom]}`);
 
-function getCurrencyFromSum (curr:string) :number
-{
-  var total = 0;
-  for(var i=0; i<transactions.length; i++){
+    var maxCurrencySold = fromCurrencies[indexFrom] || "";
+    var maxCurrencySoldAmount = fromCurrenciesAmount[indexFrom] || 0;
+  // -----------------------------------------------------------------------------------------------------
+      // Get most Bought Currency
+      var toCurrencies: string[] = [];
+      for(i=0; i<transactions.length; i++){
+          var currentTo:string = transactions[i].to;
+    
+        // eslint-disable-next-line no-loop-func
+        if(!toCurrencies.find(elem => elem === currentTo)){
+          toCurrencies = toCurrencies.concat(currentTo);
+        }
+      } 
+    
+      var toCurrenciesAmount: number[] = [];
+      for (i=0; i<toCurrencies.length; i++){
+        var amountTo:number =  getCurrencyToSum(toCurrencies[i]);
+        toCurrenciesAmount.push(amountTo);
+      }  
+      const maxAmountTo = Math.max(...toCurrenciesAmount);
+      const indexTo = toCurrenciesAmount.indexOf(maxAmountTo);
 
-    if(transactions[i].from === curr){
-      total += transactions[i].amount;
-    };
-  }
-  // console.log(`Total ${curr} spent: ${total}`);
-  return total;
-}
+      var maxCurrencyBought = toCurrencies[indexTo] || "";
+      var maxCurrencyBoughtAmount = toCurrenciesAmount[indexTo] || 0;
 
-function getCurrencyToSum (curr:string) :number
-{
-  var total = 0;
-  for(var i=0; i<transactions.length; i++){
-
-    if(transactions[i].to === curr){
-      total += transactions[i].result;
-    };
-  }
-  // console.log(`Total ${curr} spent: ${total}`);
-  return total;
-}
-
-  /** Clear Database Button */
-const handleClearDBClicked = async () =>{
-
-  // call database clear and reload
-  const historyUrl = `${baseUrl}${clearApi}`;
-  const request = historyUrl;
-  await axios(request);
-  fetchTransactions();
-  calculateQuickStats();
-  clearGui();
-}
-
-const handleInputCurrFromChanged = (event: ChangeEvent<{ value: string }>) => {
-  setCurrencyFrom(event?.currentTarget?.value);
-}
-
-const handleInputCurrToChanged = (event: ChangeEvent<{ value: string }>) => {
-  setCurrencyTo(event?.currentTarget?.value);
-}
-
-const handleInputCurrFromAmountChanged = (event: ChangeEvent<{ value: string }>) => {
-
-  var value = event?.currentTarget?.value;
-  if (value === "") {
-    setCurrencyFromAmount(0);    
-    return;
+      // console.log(`There is most ${maxCurrencyBought} bought: ${maxCurrencyBoughtAmount}`);
+      // console.log(`There is most ${maxCurrencySold} sold: ${maxCurrencySoldAmount}`);
+      setQuickStats({currBought:maxCurrencyBought,  currBoughtAmount:maxCurrencyBoughtAmount, currSold: maxCurrencySold, currSoldAmount : maxCurrencySoldAmount});
   }
 
-  var number = parseFloat(value);
-  setCurrencyFromAmount(number);
-}
+  function getCurrencyFromSum (curr:string) :number
+  {
+    var total = 0;
+    for(var i=0; i<transactions.length; i++){
 
-const computeTransferRate = (x:number, y:number) => {
-  // check null div
-  if(x === 0) {
-    return 0;}
+      if(transactions[i].from === curr){
+        total += transactions[i].amount;
+      };
+    }
+    // console.log(`Total ${curr} spent: ${total}`);
+    return total;
+  }
 
-  if(y === 0) {
-    return 0;}
+  function getCurrencyToSum (curr:string) :number
+  {
+    var total = 0;
+    for(var i=0; i<transactions.length; i++){
 
-  return y/x;
-}
+      if(transactions[i].to === curr){
+        total += transactions[i].result;
+      };
+    }
+    // console.log(`Total ${curr} spent: ${total}`);
+    return total;
+  }
+
+    /** Clear Database Button */
+  const handleClearDBClicked = async () =>{
+
+    // call database clear and reload
+    const historyUrl = `${baseUrl}${clearApi}`;
+    const request = historyUrl;
+    await axios(request);
+    fetchTransactions();
+    calculateQuickStats();
+    clearGui();
+  }
+
+  const handleInputCurrFromChanged = (event: ChangeEvent<{ value: string }>) => {
+    setCurrencyFrom(event?.currentTarget?.value);
+  }
+
+  const handleInputCurrToChanged = (event: ChangeEvent<{ value: string }>) => {
+    setCurrencyTo(event?.currentTarget?.value);
+  }
+
+  const handleInputCurrFromAmountChanged = (event: ChangeEvent<{ value: string }>) => {
+
+    var value = event?.currentTarget?.value;
+    if (value === "") {
+      setCurrencyFromAmount(0);    
+      return;
+    }
+
+    var number = parseFloat(value);
+    setCurrencyFromAmount(number);
+  }
+
+  const computeTransferRate = (x:number, y:number) => {
+    // check null div
+    if(x === 0) {
+      return 0;}
+
+    if(y === 0) {
+      return 0;}
+
+    return y/x;
+  }
 
   return (
     <div>

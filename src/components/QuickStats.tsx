@@ -2,11 +2,6 @@ import React from 'react';
 
 type Props = QuickStatsProps;
 
-// default values
-// export const quickStatsDefault : IQuickStats = { currBought:"EUR", currBoughtAmount:0, currSold:"EUR", currSoldAmount:0 };
-
-// const quickStats: React.FC<IQuickStats> = ({ currBought, currBoughtAmount, currSold, currSoldAmount}) => {
-// const quickStats: React.FC<IQuickStats> = ({ currBought, currBoughtAmount, currSold, currSoldAmount}) => {
 const QuickStats:  React.FC<Props> = ({quickStats}) => {
     
 
@@ -36,8 +31,6 @@ const QuickStats:  React.FC<Props> = ({quickStats}) => {
     </table>
 
     );
-
-
 };
 
 export default QuickStats;
